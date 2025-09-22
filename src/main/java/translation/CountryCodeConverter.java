@@ -41,10 +41,9 @@ public class CountryCodeConverter {
             while (iterator.hasNext()) {
                 String line = iterator.next();
                 String[] parts = line.split("\t");
-                // TODO Task B: use parts to populate the instance variables
                 String country_name = parts[0];
                 String country_code = parts [2];
-                countryCodeToCountry.put(country_name, country_code);
+                countryToCountryCode.put(country_name, country_code);
                 countryCodeToCountry.put(country_code, country_name);
 
 
@@ -63,6 +62,7 @@ public class CountryCodeConverter {
      */
     public String fromCountryCode(String code) {
         // TODO Task B: update this code to use an instance variable to return the correct value
+        // return the mapping
         return code;
     }
 
