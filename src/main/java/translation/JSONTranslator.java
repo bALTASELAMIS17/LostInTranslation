@@ -62,8 +62,8 @@ public class JSONTranslator implements Translator {
                     if (!key.equals("id") && !key.equals("alpha2") && !key.equals("alpha3")) {
                         String languageCode = key;
                         // TODO Task C: record this translation in the appropriate instance variable
-                        string translation =
-
+                        String translatedName = countryData.getString(languageCode);
+                        translations.put(countryCode + "-" + languageCode, translatedName);
 
 
                         if (!languages.contains(languageCode)) {
