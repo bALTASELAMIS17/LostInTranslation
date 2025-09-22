@@ -36,12 +36,18 @@ public class CountryCodeConverter {
             List<String> lines = Files.readAllLines(Paths.get(getClass()
                     .getClassLoader().getResource(filename).toURI()));
 
-            Iterator<String> iterator = lines.iterator();
+            Iterator<String> iterator = lines.iterator(); // becomes an iterator and allow loops
             iterator.next(); // skip the first line
             while (iterator.hasNext()) {
                 String line = iterator.next();
                 String[] parts = line.split("\t");
                 // TODO Task B: use parts to populate the instance variables
+                String country_name = parts[0];
+                String country_code = parts [2];
+                countryCodeToCountry.put(country_name, country_code);
+                countryCodeToCountry.put(country_code, country_name);
+
+
             }
         }
         catch (IOException | URISyntaxException ex) {
