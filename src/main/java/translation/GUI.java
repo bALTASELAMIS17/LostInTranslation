@@ -1,65 +1,105 @@
 package translation;
 
 import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+import java.util.ArrayList;
 import java.awt.event.*;
 
 
-// TODO Task D: Update the GUI for the program to align with UI shown in the README example.
-//            Currently, the program only uses the CanadaTranslator and the user has
-//            to manually enter the language code they want to use for the translation.
-//            See the examples package for some code snippets that may be useful when updating
-//            the GUI.
 public class GUI {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            JPanel countryPanel = new JPanel();
-            JTextField countryField = new JTextField(10);
-            countryField.setText("can");
-            countryField.setEditable(false); // we only support the "can" country code for now
-            countryPanel.add(new JLabel("Country:"));
-            countryPanel.add(countryField);
+            LanguageCodeConverter languageConv = new LanguageCodeConverter();
+            CountryCodeConverter  countryConv  = new CountryCodeConverter();
 
-            JPanel languagePanel = new JPanel();
-            JTextField languageField = new JTextField(10);
+
+            JPanel languagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             languagePanel.add(new JLabel("Language:"));
-            languagePanel.add(languageField);
 
-            JPanel buttonPanel = new JPanel();
+            List<String> languageNames = new ArrayList<>(languageConv.getAllLanguageNames());
+            languageNames.sort(String.CASE_INSENSITIVE_ORDER);
+            JComboBox<String> languageCombo = new JComboBox<>(languageNames.toArray(new String[0]));
+
+            // try to default to English if available
+            for (int i = 0; i < languageCombo.getItemCount(); i++) {
+                if ("English".equalsIgnoreCase(languageCombo.getItemAt(i))) {
+                    languageCombo.setSelectedIndex(i);
+                    break;
+                }
+            }
+            languagePanel.add(languageCombo);
+
+            JPanel countryPanel = new JPanel(new BorderLayout());
+            countryPanel.add(new JLabel("Country:"), BorderLayout.NORTH);
+
+            List<String> countryNames = new ArrayList<>(countryConv.getAllCountries());
+            countryNames.sort(String.CASE_INSENSITIVE_ORDER);
+
+            JList<String> countryList = new JList<>(countryNames.toArray(new String[0]));
+            countryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            countryList.setVisibleRowCount(12);
+            // default to Canada if present
+            int defaultIndex = countryNames.indexOf("Canada");
+            countryList.setSelectedIndex(Math.max(defaultIndex, 0));
+
+            JScrollPane countryScroll = new JScrollPane(countryList);
+            countryScroll.setPreferredSize(new Dimension(200, 220));
+            countryPanel.add(countryScroll, BorderLayout.CENTER);
+
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             JButton submit = new JButton("Submit");
             buttonPanel.add(submit);
 
             JLabel resultLabelText = new JLabel("Translation:");
             buttonPanel.add(resultLabelText);
-            JLabel resultLabel = new JLabel("\t\t\t\t\t\t\t");
+            JLabel resultLabel = new JLabel(" ");
             buttonPanel.add(resultLabel);
 
 
+
             // adding listener for when the user clicks the submit button
-            submit.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    String language = languageField.getText();
-                    String country = countryField.getText();
+            Runnable doTranslate = () -> {
+                String languageName = (String) languageCombo.getSelectedItem();
+                String countryName  = countryList.getSelectedValue();
 
-                    // for now, just using our simple translator, but
-                    // we'll need to use the real JSON version later.
-                    Translator translator = new CanadaTranslator();
-
-                    String result = translator.translate(country, language);
-                    if (result == null) {
-                        result = "no translation found!";
-                    }
-                    resultLabel.setText(result);
-
+                if (languageName == null || languageName.isBlank()) {
+                    resultLabel.setText("please select a language");
+                    return;
+                }
+                if (countryName == null || countryName.isBlank()) {
+                    resultLabel.setText("please select a country");
+                    return;
                 }
 
+                String languageCode = languageConv.fromLanguage(languageName);
+                String countryCode  = countryConv.fromCountry(countryName);
+
+                if (languageCode == null || languageCode.isBlank()) {
+                    resultLabel.setText("no language code found for: " + languageName);
+                    return;
+                }
+                if (countryCode == null || countryCode.isBlank()) {
+                    resultLabel.setText("no country code found for: " + countryName);
+                    return;
+                }
+
+                Translator translator = new JSONTranslator();
+                String result = translator.translate(countryCode.toLowerCase(), languageCode.toLowerCase());
+                resultLabel.setText((result == null || result.isBlank()) ? "no translation found!" : result);
+            };
+
+            submit.addActionListener((ActionEvent e) -> doTranslate.run());
+            // nice UX: translate when selections change
+            languageCombo.addActionListener(e -> doTranslate.run());
+            countryList.addListSelectionListener(e -> { if (!e.getValueIsAdjusting()) doTranslate.run();
             });
 
             JPanel mainPanel = new JPanel();
             mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-            mainPanel.add(countryPanel);
             mainPanel.add(languagePanel);
+            mainPanel.add(countryPanel);
             mainPanel.add(buttonPanel);
 
             JFrame frame = new JFrame("Country Name Translator");
