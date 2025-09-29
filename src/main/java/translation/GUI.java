@@ -48,14 +48,12 @@ public class GUI {
             countryScroll.setPreferredSize(new Dimension(200, 220));
             countryPanel.add(countryScroll, BorderLayout.CENTER);
 
-            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            JButton submit = new JButton("Submit");
-            buttonPanel.add(submit);
+            JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
             JLabel resultLabelText = new JLabel("Translation:");
-            buttonPanel.add(resultLabelText);
+            bottomPanel.add(resultLabelText);
             JLabel resultLabel = new JLabel(" ");
-            buttonPanel.add(resultLabel);
+            bottomPanel.add(resultLabel);
 
 
 
@@ -90,7 +88,6 @@ public class GUI {
                 resultLabel.setText((result == null || result.isBlank()) ? "no translation found!" : result);
             };
 
-            submit.addActionListener((ActionEvent e) -> doTranslate.run());
             // nice UX: translate when selections change
             languageCombo.addActionListener(e -> doTranslate.run());
             countryList.addListSelectionListener(e -> { if (!e.getValueIsAdjusting()) doTranslate.run();
@@ -100,7 +97,7 @@ public class GUI {
             mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
             mainPanel.add(languagePanel);
             mainPanel.add(countryPanel);
-            mainPanel.add(buttonPanel);
+            mainPanel.add(bottomPanel);
 
             JFrame frame = new JFrame("Country Name Translator");
             frame.setContentPane(mainPanel);
